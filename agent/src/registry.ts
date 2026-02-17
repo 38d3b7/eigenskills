@@ -18,7 +18,7 @@ const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 const REGISTRY_URL =
   process.env.SKILL_REGISTRY_URL ??
-  "https://raw.githubusercontent.com/yourorg/eigenskills-registry/main/registry/registry.json";
+  "https://raw.githubusercontent.com/38d3b7/eigenskills/main/registry/registry.json";
 
 export async function fetchRegistry(): Promise<Registry> {
   const now = Date.now();
