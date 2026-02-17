@@ -97,3 +97,54 @@ export async function signSiweMessage(address: string): Promise<{
 
   return { message, signature };
 }
+
+const GRANT_API = "https://determinal-api.eigenarcade.com";
+
+/**
+ * Check if the wallet has an active EigenAI grant.
+ */
+export async function checkEigenAIGrant(address: string): Promise<{
+  hasGrant: boolean;
+  tokenCount: number;
+}> {
+  try {
+    const res = await fetch(`${GRANT_API}/checkGrant?address=${address}`);
+    if (!res.ok) {
+      return { hasGrant: false, tokenCount: 0 };
+    }
+    const data = await res.json();
+    return {
+      hasGrant: data.hasGrant ?? false,
+      tokenCount: data.tokenCount ?? 0,
+    };
+  } catch {
+    return { hasGrant: false, tokenCount: 0 };
+  }
+}
+
+/**
+ * Sign the EigenAI grant message with the user's wallet.
+ * This allows the agent to use the user's grant instead of needing its own.
+ */
+export async function signEigenAIGrant(address: string): Promise<{
+  grantMessage: string;
+  grantSignature: string;
+}> {
+  if (!window.ethereum) {
+    throw new Error("MetaMask not installed");
+  }
+
+  // Fetch the grant message from EigenAI
+  const res = await fetch(`${GRANT_API}/message?address=${address}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch grant message: ${res.status}`);
+  }
+  const { message } = await res.json();
+
+  // Sign with user's wallet
+  const provider = new BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const signature = await signer.signMessage(message);
+
+  return { grantMessage: message, grantSignature: signature };
+}

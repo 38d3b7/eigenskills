@@ -280,8 +280,8 @@ App ID: 42
 Status: running
 Docker Digest: sha256:4f6c2b3a...
 Instance IP: 203.0.113.45
-TEE Wallet (Ethereum): 0xa4Cae7029dfe122866F479E3b6eFb88dA3b35aea
-TEE Wallet (Solana): 6Xu2q4nifx9pfdwLtvAHSfGnXhXUJhnjWqcDhfhT1vpY
+TEE Wallet (Ethereum): 0x1234567890abcdef1234567890abcdef12345678
+TEE Wallet (Solana): ExampleSo1anaWa11etAddressXXXXXXXXXXXXXXXXXXX
 Environment Variables:
   NETWORK_PUBLIC: sepolia
 Created: 2025-01-07

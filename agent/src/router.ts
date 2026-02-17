@@ -5,56 +5,93 @@ const GRANT_API =
   process.env.EIGENAI_GRANT_API ?? "https://determinal-api.eigenarcade.com";
 const MODEL = "gpt-oss-120b-f16";
 
-// Cached grant credentials (message + signature can be reused)
-let cachedGrant: { message: string; signature: string } | null = null;
+// Cached grant credentials (message + signature + walletAddress)
+let cachedGrant: {
+  message: string;
+  signature: string;
+  walletAddress: string;
+} | null = null;
 
 /**
- * Get grant authentication by fetching a message and signing it with the TEE wallet.
+ * Get grant authentication credentials.
+ *
+ * Priority:
+ * 1. User-provided grant credentials (env vars from setup)
+ * 2. TEE wallet grant (fetches message and signs with agent wallet)
+ *
  * The grant credentials are cached for subsequent requests.
  */
-async function getGrantAuth(): Promise<{ message: string; signature: string }> {
+async function getGrantAuth(): Promise<{
+  message: string;
+  signature: string;
+  walletAddress: string;
+}> {
   if (cachedGrant) {
     return cachedGrant;
   }
 
-  const address = getAgentAddress();
-  if (address === "0x0000000000000000000000000000000000000000") {
-    throw new Error("TEE wallet not available (MNEMONIC not set)");
+  // Check for user-provided grant credentials first
+  const userGrantMessage = process.env.EIGENAI_GRANT_MESSAGE;
+  const userGrantSignature = process.env.EIGENAI_GRANT_SIGNATURE;
+  const userWalletAddress = process.env.EIGENAI_WALLET_ADDRESS;
+
+  if (userGrantMessage && userGrantSignature && userWalletAddress) {
+    console.log(`Using user-provided grant for ${userWalletAddress}`);
+    cachedGrant = {
+      message: userGrantMessage,
+      signature: userGrantSignature,
+      walletAddress: userWalletAddress,
+    };
+    return cachedGrant;
   }
 
-  console.log(`Fetching grant message for ${address}...`);
+  // Fall back to TEE wallet grant
+  const address = getAgentAddress();
+  if (address === "0x0000000000000000000000000000000000000000") {
+    throw new Error(
+      "No grant credentials available: EIGENAI_GRANT_* env vars not set and TEE wallet not available (MNEMONIC not set)"
+    );
+  }
+
+  console.log(`Fetching grant message for TEE wallet ${address}...`);
   const messageRes = await fetch(`${GRANT_API}/message?address=${address}`);
 
   if (!messageRes.ok) {
     const errorText = await messageRes.text();
-    throw new Error(`Failed to get grant message: ${messageRes.status} ${errorText}`);
+    throw new Error(
+      `Failed to get grant message: ${messageRes.status} ${errorText}`
+    );
   }
 
   const { message } = await messageRes.json();
   console.log("Signing grant message with TEE wallet...");
   const signature = await signMessage(message);
 
-  cachedGrant = { message, signature };
-  console.log("Grant authentication cached");
+  cachedGrant = { message, signature, walletAddress: address };
+  console.log("TEE wallet grant authentication cached");
   return cachedGrant;
 }
 
 /**
  * Check if the wallet has an active grant with available tokens.
+ * Uses user-provided wallet address if available, otherwise TEE wallet.
  */
 export async function checkGrantStatus(): Promise<{
   hasGrant: boolean;
   tokenCount: number;
+  walletAddress: string;
 }> {
-  const address = getAgentAddress();
+  // Use user-provided wallet if available, otherwise TEE wallet
+  const address = process.env.EIGENAI_WALLET_ADDRESS ?? getAgentAddress();
   const res = await fetch(`${GRANT_API}/checkGrant?address=${address}`);
   if (!res.ok) {
-    return { hasGrant: false, tokenCount: 0 };
+    return { hasGrant: false, tokenCount: 0, walletAddress: address };
   }
   const data = await res.json();
   return {
     hasGrant: data.hasGrant ?? false,
     tokenCount: data.tokenCount ?? 0,
+    walletAddress: address,
   };
 }
 
@@ -70,9 +107,9 @@ export async function routeTask(
   availableSkills: Skill[],
   _retryCount: number = 0
 ): Promise<RoutingResult> {
-  // Get grant authentication (uses TEE wallet to sign)
+  // Get grant authentication (user-provided or TEE wallet)
   const grant = await getGrantAuth();
-  const walletAddress = getAgentAddress();
+  const walletAddress = grant.walletAddress;
 
   const skillList = availableSkills
     .map((s) => `- ${s.id}: ${s.description}`)

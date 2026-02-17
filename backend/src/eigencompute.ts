@@ -196,8 +196,8 @@ export async function getAppInfo(appId: string): Promise<AppInfo> {
 
     const output = execWithSanitizedErrors(command, getExecOptions(30000));
 
-    // ecloud app info output format (actual):
-    //   IP:             34.138.252.98
+    // ecloud app info output format (example):
+    //   IP:             203.0.113.45
     //   EVM Address:    0xecf5...  (path: m/44'/60'/0'/0/0)
     //   Solana Address: 6kcV4...   (path: m/44'/501'/0'/0')
     //   Docker Digest:  sha256:... (may not always appear)

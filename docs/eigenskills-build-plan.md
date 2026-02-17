@@ -69,6 +69,8 @@ Three components:
 
 ## Component 1: Skill Registry (GitHub)
 
+**Live Registry:** https://github.com/38d3b7/eigenskills/tree/main/registry/skills
+
 ### Repo Structure
 
 ```

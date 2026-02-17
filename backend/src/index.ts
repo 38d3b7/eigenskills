@@ -49,7 +49,9 @@ app.post("/api/auth/verify", async (req, res) => {
     const token = createSessionToken(address);
     const agent = getAgentByUser(address);
 
-    res.json({ address, token, hasAgent: !!agent });
+    // Only consider active (non-terminated) agents
+    const hasActiveAgent = !!agent && agent.status !== "terminated";
+    res.json({ address, token, hasAgent: hasActiveAgent });
   } catch (error) {
     console.error("SIWE verification error:", error);
     res.status(401).json({ error: "Invalid signature" });

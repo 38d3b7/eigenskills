@@ -1,12 +1,17 @@
 import { execSync } from "child_process";
-import { readFileSync, mkdirSync, existsSync } from "fs";
-import { join } from "path";
+import { readFileSync, mkdirSync, existsSync, cpSync } from "fs";
+import { join, resolve } from "path";
 import matter from "gray-matter";
 
 const SKILLS_CACHE_DIR = "/tmp/eigenskills";
+
+// Local registry path for development (set SKILL_REGISTRY_LOCAL=/path/to/registry/skills)
+const LOCAL_REGISTRY_PATH = process.env.SKILL_REGISTRY_LOCAL;
+
+// Remote registry for production
 const REGISTRY_REPO =
   process.env.SKILL_REGISTRY_REPO ??
-  "https://github.com/yourorg/eigenskills-registry.git";
+  "https://github.com/38d3b7/eigenskills.git";
 
 const SAFE_SKILL_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$/;
 
@@ -33,19 +38,34 @@ export interface ExecutionResult {
 }
 
 /**
- * Fetch a skill folder from the registry.
- * Uses git sparse-checkout to pull only the specific skill.
+ * Fetch a skill folder from local registry or remote git repo.
+ * In development, set SKILL_REGISTRY_LOCAL to use local files.
+ * In production, uses git sparse-checkout to pull only the specific skill.
  */
 function fetchSkillFolder(skillId: string): string {
   validateSkillId(skillId);
   const skillDir = join(SKILLS_CACHE_DIR, skillId);
 
+  // Return cached skill if already fetched
   if (existsSync(skillDir)) {
     return skillDir;
   }
 
   mkdirSync(SKILLS_CACHE_DIR, { recursive: true });
 
+  // Development mode: copy from local registry
+  if (LOCAL_REGISTRY_PATH) {
+    const localSkillPath = resolve(LOCAL_REGISTRY_PATH, skillId);
+    if (!existsSync(localSkillPath)) {
+      throw new Error(
+        `Skill "${skillId}" not found in local registry at ${localSkillPath}`
+      );
+    }
+    cpSync(localSkillPath, skillDir, { recursive: true });
+    return skillDir;
+  }
+
+  // Production mode: clone from git
   const repoDir = join(SKILLS_CACHE_DIR, "_repo");
   if (!existsSync(repoDir)) {
     execSync(
@@ -64,7 +84,7 @@ function fetchSkillFolder(skillId: string): string {
     throw new Error(`Skill folder not found after checkout: ${skillId}`);
   }
 
-  execSync(`cp -r "${sourcePath}" "${skillDir}"`, { stdio: "pipe" });
+  cpSync(sourcePath, skillDir, { recursive: true });
   return skillDir;
 }
 

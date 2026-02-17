@@ -8,7 +8,7 @@ alwaysApply: true
 ## Architecture
 
 Three components:
-1. **Skill Registry** — curated GitHub repo, indexed by registry.json, GitHub Action validates
+1. **Skill Registry** — curated GitHub repo at https://github.com/38d3b7/eigenskills, indexed by registry.json, GitHub Action validates
 2. **Agent Container** — Docker image deployed per-user to EigenCompute TEE (viem wallet, EigenAI routing, sandboxed skill execution)
 3. **Platform** — Next.js frontend + Express backend, SIWE auth, orchestrates EigenCompute deploys
 
