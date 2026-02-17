@@ -1,0 +1,74 @@
+---
+description: EigenCloud debugging workflow - read project docs and Context7 before fixing errors
+alwaysApply: true
+---
+
+# EigenCloud Debugging Protocol
+
+When debugging errors related to EigenCloud, EigenCompute, or EigenAI (e.g., `ecloud` CLI errors, deployment failures, API errors), follow this protocol before attempting fixes.
+
+## Trigger Keywords
+
+Apply this protocol when the user reports errors containing:
+- `ecloud` CLI errors
+- EigenCompute deployment issues
+- EigenAI API failures
+- TEE/wallet/MNEMONIC issues
+- Grant authentication errors
+
+## Required Steps
+
+### 1. Read Project Documentation
+
+Read these files to understand the project architecture and implementation:
+
+- `docs/eigenskills-build-plan.md` — Full architecture, component design, env vars, API routes
+- `docs/README.md` — Project structure, setup instructions, chains reference
+- `docs/eigenai-reference.md` — EigenAI API, grant auth flow, signature verification
+- `docs/eigencompute-reference.md` — CLI commands, Dockerfile requirements, TEE wallet
+
+### 2. Query Context7
+
+Query the official EigenCloud documentation for current CLI syntax and API details:
+
+```
+Library ID: /layr-labs/eigencloud-docs
+
+Example queries:
+- "ecloud compute app deploy command syntax and flags"
+- "EigenAI grant authentication flow"
+- "EigenCompute environment variables and configuration"
+```
+
+### 3. Cross-Reference and Fix
+
+Compare project docs with official docs, then implement fixes with citations.
+
+## Context7 Queries by Error Type
+
+| Error Pattern | Context7 Query |
+|---------------|----------------|
+| `ecloud compute app deploy` failures | "ecloud compute app deploy command syntax image-ref flags" |
+| `command not found` in CLI | "ecloud CLI installation and command structure" |
+| EigenAI 401/403 errors | "EigenAI authentication grant-based wallet signature" |
+| Environment variable issues | "EigenCompute environment variables MNEMONIC encryption" |
+| Docker/TEE deployment | "EigenCompute Dockerfile requirements linux/amd64 root" |
+
+## Known Issues and Solutions
+
+| Error | Root Cause | Solution |
+|-------|------------|----------|
+| `ExitPromptError: User force closed the prompt` | CLI prompts in non-interactive mode | Pipe `echo N \|` before command |
+| `command compute:app:deploy:image:tag not found` | Colon parsed as oclif subcommand separator | Use `--image-ref` flag instead of positional arg |
+| `spawnSync /bin/sh ENOBUFS` | `yes N \|` infinite output overflows buffer | Use `echo N \|` instead |
+| `Failed to pull image ... 404` | Image not pushed to Docker Hub | Build with `--platform linux/amd64` and push |
+| Private key in error logs | `execSync` includes command in error message | Wrap in try/catch, sanitize with regex |
+
+## Do Not
+
+- Guess CLI syntax without checking both project docs AND Context7
+- Assume flag names (they may differ between CLI versions)
+- Skip the documentation lookup even if you think you know the answer
+- Use `yes N |` for piping (causes buffer overflow)
+- Pass image reference as positional argument (use `--image-ref` flag)
+- Log raw `execSync` errors without sanitizing private keys

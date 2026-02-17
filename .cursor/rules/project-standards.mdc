@@ -1,0 +1,39 @@
+---
+description: EigenSkills project conventions, architecture, and Context7 references
+alwaysApply: true
+---
+
+# EigenSkills Project Standards
+
+## Architecture
+
+Three components:
+1. **Skill Registry** — curated GitHub repo, indexed by registry.json, GitHub Action validates
+2. **Agent Container** — Docker image deployed per-user to EigenCompute TEE (viem wallet, EigenAI routing, sandboxed skill execution)
+3. **Platform** — Next.js frontend + Express backend, SIWE auth, orchestrates EigenCompute deploys
+
+## Key Conventions
+
+- Agent wallet derivation uses **viem** (`mnemonicToAccount`), not ethers
+- EigenAI model: `gpt-oss-120b-f16` (only documented model)
+- EigenAI Sepolia: `https://eigenai-sepolia.eigencloud.xyz/v1/chat/completions`
+- EigenAI Mainnet: `https://eigenai.eigencloud.xyz/v1/chat/completions`
+- Dockerfile must use `--platform=linux/amd64` and `USER root`
+- Env vars ending in `_PUBLIC` are visible on-chain; all others are encrypted in TEE
+- Skills declare `requires_env` — executor only passes those vars to subprocess
+- Auth is SIWE (Sign In With Ethereum), no passwords
+- No staking contract — curated registry is the trust model
+
+## Context7 Library IDs
+
+Use these when querying Context7 for docs:
+- EigenCloud: `/layr-labs/eigencloud-docs`
+- ethers v6: `/websites/ethers_v6`
+- Express: `/expressjs/express`
+- Commander.js: `/tj/commander.js`
+
+## Reference Docs
+
+- `docs/eigenai-reference.md` — EigenAI API, tool calling, signature verification
+- `docs/eigencompute-reference.md` — Dockerfile, ecloud CLI, env vars, deploy flow
+- `docs/eigenskills-build-plan.md` — Full architecture and build sequence

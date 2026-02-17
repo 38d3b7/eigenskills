@@ -1,0 +1,33 @@
+{
+  "skills": [
+    {
+      "id": "humanize-ai-text",
+      "description": "Detects AI-generated text patterns and rewrites content to sound more natural and human-written. Useful for editing drafts, improving readability, and reducing robotic tone in AI-assisted writing.",
+      "version": "1.0.0",
+      "author": "eigenskills",
+      "contentHash": "sha256:c41340c47a2b53dbb0f4551197732701f657add19d1280026a3e2318dbae16d8",
+      "requiresEnv": [],
+      "hasExecutionManifest": true
+    },
+    {
+      "id": "summarize-text",
+      "description": "Summarizes long text into concise bullet points or a short paragraph. Works with articles, documents, meeting notes, or any lengthy content. No external API required \u2014 uses simple extractive summarization.",
+      "version": "1.0.0",
+      "author": "eigenskills",
+      "contentHash": "sha256:58b31da6949d237e61a5666c2bc83595b800401bd47214636258056e660060d4",
+      "requiresEnv": [],
+      "hasExecutionManifest": true
+    },
+    {
+      "id": "translate-text",
+      "description": "Translates text between languages using the OpenAI API. Supports any language pair that GPT models can handle. Provide the target language and text as input.",
+      "version": "1.0.0",
+      "author": "eigenskills",
+      "contentHash": "sha256:f0920ac6f22b82ded25e8d369e16eb0c6428570101d47c90d0deba57799103ee",
+      "requiresEnv": [
+        "OPENAI_API_KEY"
+      ],
+      "hasExecutionManifest": true
+    }
+  ]
+}

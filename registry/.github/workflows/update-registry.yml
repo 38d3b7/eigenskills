@@ -1,0 +1,34 @@
+name: Update Registry Index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'registry/skills/**'
+
+jobs:
+  update-registry:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate skills and generate registry.json
+        run: python registry/scripts/generate-registry.py
+
+      - name: Commit updated registry.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add registry/registry.json
+          git diff --cached --quiet || git commit -m "chore: update registry.json"
+          git push

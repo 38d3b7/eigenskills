@@ -1,0 +1,39 @@
+# secrets
+.env
+.env.local
+.env.production
+.env*.local
+
+# dependencies
+node_modules/
+
+# database
+data/
+*.db
+
+# build output
+dist/
+build/
+.next/
+out/
+
+# OS
+.DS_Store
+*.pem
+*.key
+*.p12
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# test scripts with hardcoded tokens
+test-deploy.js
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
